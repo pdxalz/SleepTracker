@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sleep Tracker</title>
+
+    <!-- iOS Web App Tags for Portrait Enforcement (when added to home screen) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Main Tracker View -->
+    <main id="tracker-view" class="view active">
+        <header>
+            <h1>Sleep Tracker</h1>
+        </header>
+
+        <div class="button-grid" style="grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
+            <button id="btn-bed" class="track-btn btn-bed">
+                <span class="icon">🛏️</span>
+                <span class="label">Bed</span>
+            </button>
+            <button id="btn-wake" class="track-btn btn-wake">
+                <span class="icon">👁️</span>
+                <span class="label">Wake</span>
+            </button>
+            <button id="btn-calming" class="track-btn btn-calming">
+                <span class="icon">🧘</span>
+                <span class="label">Calming</span>
+            </button>
+            <button id="btn-listening" class="track-btn btn-listening">
+                <span class="icon">🎧</span>
+                <span class="label">Listening</span>
+            </button>
+            <button id="btn-up" class="track-btn btn-up">
+                <span class="icon">🚶</span>
+                <span class="label">Get Up</span>
+            </button>
+        </div>
+
+        <button id="btn-done" class="btn-done-fab">
+            <span class="icon">☑️</span>
+        </button>
+
+        <div id="toast" class="toast hidden">Recorded</div>
+    </main>
+
+    <!-- Questionnaire View -->
+    <main id="question-view" class="view hidden">
+        <header>
+            <h1>Sleep Details</h1>
+            <p class="subtitle">How long did it take to fall asleep?</p>
+        </header>
+
+        <div id="questions-container" class="questions-container">
+            <!-- Questions injected here via JS -->
+        </div>
+
+        <div class="event-log-container" style="margin-bottom: 24px;">
+            <h3>Tonight's Events</h3>
+            <ul class="event-list">
+                <!-- Events will be populated here -->
+            </ul>
+            <button class="text-btn btn-clear-events">Clear All Events</button>
+        </div>
+
+        <div class="actions">
+            <button id="btn-calculate" class="primary-btn">Calculate Report</button>
+            <button class="text-btn btn-back-to-tracker">Back to Tracker</button>
+        </div>
+    </main>
+
+    <!-- Final Report View -->
+    <main id="report-view" class="view hidden">
+        <header>
+            <h1>Sleep Report</h1>
+            <p class="subtitle">For Insomnia Coach</p>
+        </header>
+
+        <div class="report-card">
+            <div class="report-item">
+                <span class="report-label">First getting into bed:</span>
+                <span class="report-value" id="rep-first-bed">--:--</span>
+            </div>
+            <div class="report-item">
+                <span class="report-label">Time to fall asleep:</span>
+                <span class="report-value" id="rep-fall-asleep">-- min</span>
+            </div>
+            <div class="report-item">
+                <span class="report-label">Number of awakenings:</span>
+                <span class="report-value" id="rep-wake-count">--</span>
+            </div>
+            <div class="report-item">
+                <span class="report-label">Time spent awake:</span>
+                <span class="report-value" id="rep-wake-time">-- min</span>
+            </div>
+            <div class="report-item highlight">
+                <span class="report-label">Final awakening:</span>
+                <span class="report-value" id="rep-final-wake">--:--</span>
+            </div>
+        </div>
+
+        <div class="event-log-container" style="margin-bottom: 24px;">
+            <h3>Recorded Events</h3>
+            <ul class="event-list">
+                <!-- Events will be populated here -->
+            </ul>
+        </div>
+
+        <div class="actions">
+            <button id="btn-finish" class="primary-btn">Done & Reset</button>
+            <button class="text-btn btn-back-to-tracker">Back to Tracker</button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
