@@ -1,5 +1,6 @@
 // State
 let events = JSON.parse(localStorage.getItem('sleepEvents')) || [];
+let segmentAnswers = {}; // Cache for questionnaire answers
 const VIEWS = {
     TRACKER: 'tracker-view',
     QUESTION: 'question-view',
@@ -8,13 +9,59 @@ const VIEWS = {
 
 // DOM Elements
 const timeDisplay = document.getElementById('current-time'); // may not exist now, but keep reference safe
+const wakeUpInput = document.getElementById('wakeup-time');
+
+// Load saved wake up time if any
+const savedWakeUpTime = localStorage.getItem('wakeUpTime');
+if (savedWakeUpTime && wakeUpInput) {
+    wakeUpInput.value = savedWakeUpTime;
+}
+
+if (wakeUpInput) {
+    wakeUpInput.addEventListener('change', (e) => {
+        localStorage.setItem('wakeUpTime', e.target.value);
+        updateWakeUpControlColor();
+    });
+}
+
+function updateWakeUpControlColor() {
+    if (!wakeUpInput || !wakeUpInput.value) {
+        if (wakeUpInput) wakeUpInput.classList.remove('near-before', 'near-after');
+        return;
+    }
+
+    const now = new Date();
+    const [hours, minutes] = wakeUpInput.value.split(':').map(Number);
+
+    const wakeUpDate = new Date(now);
+    wakeUpDate.setHours(hours, minutes, 0, 0);
+
+    let diffMs = now.getTime() - wakeUpDate.getTime();
+
+    // Normalize diff to -12 to +12 hours
+    if (diffMs < -12 * 60 * 60 * 1000) diffMs += 24 * 60 * 60 * 1000;
+    else if (diffMs > 12 * 60 * 60 * 1000) diffMs -= 24 * 60 * 60 * 1000;
+
+    const oneHourMs = 60 * 60 * 1000;
+
+    wakeUpInput.classList.remove('near-before', 'near-after');
+
+    if (diffMs >= -oneHourMs && diffMs < 0) {
+        wakeUpInput.classList.add('near-before');
+    } else if (diffMs >= 0 && diffMs <= oneHourMs) {
+        wakeUpInput.classList.add('near-after');
+    }
+}
+
+// Call initially and set interval
+updateWakeUpControlColor();
+setInterval(updateWakeUpControlColor, 60000);
 
 // Initialize
 function init() {
     renderEvents();
     setupEventListeners();
 }
-
 
 function addEvent(type, btnElement) {
     const now = new Date();
@@ -77,6 +124,7 @@ function clearEvents() {
         events = [];
         saveEvents();
         renderEvents();
+        segmentAnswers = {}; // Reset answers
     }
 }
 
@@ -162,6 +210,7 @@ function setupEventListeners() {
         events = [];
         saveEvents();
         renderEvents();
+        segmentAnswers = {}; // Reset answers
         showView(VIEWS.TRACKER);
     });
 }
@@ -172,6 +221,15 @@ let currentSleepSegments = []; // Stores { type: string, displayTime: string, ti
 
 function buildQuestionnaire() {
     const qContainer = document.getElementById('questions-container');
+
+    // Save existing answers from DOM before rebuilding
+    currentSleepSegments.forEach(seg => {
+        const el = document.getElementById(seg.id);
+        if (el) {
+            segmentAnswers[seg.id] = el.value;
+        }
+    });
+
     qContainer.innerHTML = '';
     currentSleepSegments = [];
 
@@ -187,7 +245,7 @@ function buildQuestionnaire() {
         const ev = sortedEvents[i];
 
         currentSleepSegments.push({
-            id: `latency-${i}`,
+            id: `latency-${ev.id}`, // Use event ID instead of index
             type: ev.type,
             displayTime: ev.displayTime,
             timestamp: ev.timestamp,
@@ -201,14 +259,24 @@ function buildQuestionnaire() {
 
         let text = `At <strong>${seg.displayTime}</strong> when you marked <strong>${seg.type}</strong>, how many minutes till you fell asleep? <br><small style="color:var(--text-secondary)">(Enter 0 if you did not fall asleep)</small>`;
 
+        let val = segmentAnswers[seg.id] || "0";
+
         div.innerHTML = `
             <p class="question-text">${text}</p>
             <div class="input-group">
-                <input type="number" id="${seg.id}" class="mins-input" min="0" value="0">
+                <input type="number" id="${seg.id}" class="mins-input" min="0" value="${val}">
                 <span style="color: var(--text-secondary)">minutes</span>
             </div>
         `;
         qContainer.appendChild(div);
+
+        // Listeners to update cache immediately
+        const inputEl = document.getElementById(seg.id);
+        if (inputEl) {
+            inputEl.addEventListener('change', (e) => {
+                segmentAnswers[seg.id] = e.target.value;
+            });
+        }
     });
 }
 
